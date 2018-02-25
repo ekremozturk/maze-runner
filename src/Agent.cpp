@@ -114,6 +114,38 @@ void Agent::printPath(Node *curNode, int msec){
 // Implement for Q1-Q3 and use in the rest
 void Agent::add2Fringe (Node *node){
 		/********************* FILL-IN FROM HERE *********************/
+        if (searchType == UCS && !fringe.empty()) {
+                int newPathCost = node->pathCost;
+                for (int i=0; i<fringe.size(); i++) {
+                        int tempPathCost = fringe[i]->pathCost;
+                        if (newPathCost<=tempPathCost) {
+                                fringe.insert(fringe.begin()+i, node);
+                                return;
+                        }
+                }
+                
+        }
+        
+        if (searchType == A_STAR) {
+                node->g_n = node->pathCost;
+                node->h_n = problem->heuristicFunc(node->getState());
+                node->f_n = node->g_n + node->h_n;
+                
+                if (fringe.empty()) {
+                        fringe.push_back(node);
+                        return;
+                }
+                
+                for (int i=0; i<fringe.size(); i++) {
+                        if (node->f_n<=fringe[i]->f_n) {
+                                fringe.insert(fringe.begin()+i, node);
+                                return;
+                        }
+                }
+                
+        }
+        
+        fringe.push_back(node);
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
@@ -122,15 +154,27 @@ Node *Agent::removeFromFringe (){
 		Node *node = 0;
 		if (searchType == BFS){
 		/********************* FILL-IN FROM HERE *********************/
+                        node = fringe.front();
+                        fringe.erase(fringe.begin());
+                        fringe.shrink_to_fit();
 		/********************* FILL-IN UNTIL HERE *********************/
 		}else if (searchType == DFS){
 		/********************* FILL-IN FROM HERE *********************/
+                        node = fringe.back();
+                        fringe.pop_back();
+                        fringe.shrink_to_fit();
 		/********************* FILL-IN UNTIL HERE *********************/
 		}else if (searchType == UCS){
 		/********************* FILL-IN FROM HERE *********************/
+                        node = fringe.front();
+                        fringe.erase(fringe.begin());
+                        fringe.shrink_to_fit();
 		/********************* FILL-IN UNTIL HERE *********************/
 		}else if (searchType == A_STAR){
 		/********************* FILL-IN FROM HERE *********************/
+                        node = fringe.front();
+                        fringe.erase(fringe.begin());
+                        fringe.shrink_to_fit();
 		/********************* FILL-IN UNTIL HERE *********************/
 		}
 		return node;
@@ -145,21 +189,56 @@ Node *Agent::graphSearch(){
 		add2Fringe (initNode);
 
 		/********************* FILL-IN FROM HERE *********************/
+        //printf ("%d \n", 1);
+        while (!fringe.empty()) {
+                Node  *curNode = removeFromFringe();
+                State *curState = curNode->getState();
+                //printf ("%d \n", closedList.size());
+                
+                if (isInClosedList(curNode)) {
+                        continue;
+                }
+                
+                add2ClosedList(curNode);
+                curNode->expand(problem);
+                
+                int numOfChildren = curNode->childNodes.size();
+                
+                for (int i = 0; i < numOfChildren; i++) {
+                        add2Fringe(curNode->childNodes[i]);
+                }
+                
+                if (problem->isGoalState(curState)){
+                        solnNode = curNode;
+                        break;
+                }
+        }
+        
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
 void Agent::add2ClosedList(Node *node){
 		/********************* FILL-IN FROM HERE *********************/
+        closedList.push_back(node);
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
 void Agent::initClosedList(){
 		/********************* FILL-IN FROM HERE *********************/
+        closedList.clear();
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
 bool Agent::isInClosedList(Node *node){
 		/********************* FILL-IN FROM HERE *********************/
+        MazeState *nodeState = (MazeState*) node->getState();
+        for (int i = 0; i < closedList.size(); i++) {
+                MazeState *closedState = (MazeState*) closedList[i]->getState();
+                if (closedState->agentPos==nodeState->agentPos) {
+                        return 1;
+                }
+        }
+        return 0;
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
@@ -187,6 +266,26 @@ void Node::expand(Problem *problem){
 		// DO NOT REMOVE THIS CODE UNTIL HERE!
 		
 		/********************* FILL-IN FROM HERE *********************/
+        
+        vector<int> nextActions;
+        vector<State *> nextStates;
+        
+        problem->getSuccessorStateActionPairs (nextStates, nextActions, state);
+        
+        int numStatesActions = nextStates.size();
+        for (int i = 0; i < numStatesActions; i++) {
+                if (nextStates[i]->isSameState(state)) {
+                        continue;
+                }
+                Node *newNode     = new Node(nextStates[i]);
+                newNode->setParentNode (this);
+                newNode->action   = nextActions[i];
+                newNode->depth    = depth++;
+                newNode->pathCost = pathCost + problem->getStateActionCost (state, newNode->action);
+                childNodes.push_back(newNode);
+                
+        }
+        
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
