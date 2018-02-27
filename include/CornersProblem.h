@@ -7,6 +7,7 @@ class CornersState : public MazeState{
 		public:
 			// Q4-5
 		/********************* FILL-IN FROM HERE *********************/
+                int corner_visited [4];
 		/********************* FILL-IN UNTIL HERE *********************/
 				CornersState (int agentPos, std::vector<int> foodPosList, std::vector<int> wallPosList);
 				virtual bool isSameState (State *state);

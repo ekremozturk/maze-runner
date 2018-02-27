@@ -213,7 +213,6 @@ Node *Agent::graphSearch(){
                         break;
                 }
         }
-        
 		/********************* FILL-IN UNTIL HERE *********************/
 }
 
@@ -274,9 +273,11 @@ void Node::expand(Problem *problem){
         
         int numStatesActions = nextStates.size();
         for (int i = 0; i < numStatesActions; i++) {
+                /**
                 if (nextStates[i]->isSameState(state)) {
                         continue;
                 }
+                */
                 Node *newNode     = new Node(nextStates[i]);
                 newNode->setParentNode (this);
                 newNode->action   = nextActions[i];
